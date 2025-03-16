@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.loginAdmin = exports.createAdmin = void 0;
+exports.validateToken = exports.logoutAdmin = exports.loginAdmin = exports.createAdmin = void 0;
 const admin_model_1 = require("../models/admin-model");
 const helper_1 = require("../helper");
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
@@ -40,7 +40,13 @@ const loginAdmin = async (req, res) => {
             }
             else {
                 const secret = process.env.JWT_SECRET || "";
-                const token = jsonwebtoken_1.default.sign({ existingUser }, secret, { expiresIn: "7h" });
+                const token = jsonwebtoken_1.default.sign({ admin: existingUser }, secret, { expiresIn: "7h" });
+                // Secure HTTP-Only Cookie
+                res.cookie('validateAdminToken', JSON.stringify({ admin: existingUser, authToken: token }), {
+                    httpOnly: true,
+                    secure: process.env.NODE_ENV !== 'development', // Use HTTPS in production
+                    sameSite: 'strict',
+                });
                 (0, helper_1.successResponse)(res, "Admin logged in successfully", { admin: existingUser, authToken: token });
             }
         }
@@ -50,3 +56,26 @@ const loginAdmin = async (req, res) => {
     }
 };
 exports.loginAdmin = loginAdmin;
+const logoutAdmin = async (req, res) => {
+    try {
+        res.clearCookie('validateAdminToken', {
+            httpOnly: true,
+            secure: process.env.NODE_ENV !== 'development',
+            sameSite: 'strict',
+        });
+        (0, helper_1.successResponse)(res, "Logged out successfully");
+    }
+    catch (error) {
+        (0, helper_1.errorResponse)(res, "Error while login as admin", {});
+    }
+};
+exports.logoutAdmin = logoutAdmin;
+const validateToken = async (req, res) => {
+    try {
+        (0, helper_1.successResponse)(res, "Validated admin", { admin: req.admin, authToken: req.authToken });
+    }
+    catch (error) {
+        (0, helper_1.errorResponse)(res, "Error while login as admin", {});
+    }
+};
+exports.validateToken = validateToken;

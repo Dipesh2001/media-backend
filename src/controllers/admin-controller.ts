@@ -2,6 +2,7 @@ import { NextFunction, Request, Response } from "express";
 import { Admin } from "../models/admin-model";
 import { errorResponse, successResponse } from "../helper";
 import jwt from "jsonwebtoken"
+import { authRequest } from "../middleware/auth";
 
 // Create a new user
 export const createAdmin = async (req: Request, res: Response) => {
@@ -34,7 +35,14 @@ export const loginAdmin = async (req: Request, res: Response) => {
         errorResponse(res,"Invalid Credentials",{ });
       }else{
         const secret = process.env.JWT_SECRET || "";
-        const token = jwt.sign({ existingUser }, secret, { expiresIn: "7h" });
+        const token = jwt.sign({ admin:existingUser }, secret, { expiresIn: "7h" });
+
+         // Secure HTTP-Only Cookie
+        res.cookie('validateAdminToken', JSON.stringify({ admin: existingUser, authToken: token }), {
+            httpOnly: true,
+            secure:  process.env.NODE_ENV !== 'development', // Use HTTPS in production
+            sameSite: 'strict',
+        });
         successResponse(res,"Admin logged in successfully", { admin:existingUser,authToken:token });
       }
     }
@@ -42,3 +50,25 @@ export const loginAdmin = async (req: Request, res: Response) => {
     errorResponse(res,"Error while login as admin",{ });
   }
 };
+
+export const logoutAdmin = async (req: Request, res: Response) => {
+  try {
+    res.clearCookie('validateAdminToken', {
+      httpOnly: true,
+      secure: process.env.NODE_ENV !== 'development',
+      sameSite: 'strict',
+    });
+
+    successResponse(res,"Logged out successfully" );
+  } catch (error) {
+    errorResponse(res,"Error while login as admin",{ });
+  }
+};
+
+export const validateToken = async (req: authRequest, res: Response) =>{
+  try {
+    successResponse(res,"Validated admin", {admin:req.admin,authToken:req.authToken});
+  } catch (error) {
+    errorResponse(res,"Error while login as admin",{ });
+  }
+}

@@ -13,7 +13,7 @@ const AdminSchema = new Schema<IAdmin>({
   name: { type: String, required: true },
   email: { type: String, required: true, unique: true },
   password: { type: String, required: true },
-}, { timestamps: true });
+}, { timestamps: true, versionKey: false });
 
 // 🔐 Hash password before saving
 AdminSchema.pre<IAdmin>("save", async function (next) {

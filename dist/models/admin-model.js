@@ -44,7 +44,7 @@ const AdminSchema = new mongoose_1.Schema({
     name: { type: String, required: true },
     email: { type: String, required: true, unique: true },
     password: { type: String, required: true },
-}, { timestamps: true });
+}, { timestamps: true, versionKey: false });
 // 🔐 Hash password before saving
 AdminSchema.pre("save", async function (next) {
     if (!this.isModified("password"))
