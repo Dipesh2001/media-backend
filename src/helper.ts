@@ -6,7 +6,7 @@ export const successResponse = (
   data: any = {},
   statusCode: number = 200,
 ) => {
-  return res.status(statusCode).json({
+  res.status(statusCode).json({
     success: true,
     message,
     data,
@@ -20,9 +20,16 @@ export const errorResponse = (
   errors: any = {},
   statusCode: number = 500,
 ) => {
-  return res.status(statusCode).json({
+   res.status(statusCode).json({
     success: false,
     message,
     errors,
   });
+};
+
+export const formatImagePath = (relativePath: string | undefined | null): string => {
+  if (!relativePath) return "";
+  const baseUrl = process.env.BASE_URL || "http://localhost:5000";
+  const cleanedPath = relativePath.replace(/^.*uploads/, "/uploads").replace(/\\/g, "/");
+  return `${baseUrl}${cleanedPath}`;
 };
