@@ -24,7 +24,7 @@ const upload = (folderName, allowedTypes) => {
             cb(null, true);
         }
         else {
-            cb(new Error("Invalid file type. Only JPG, JPEG, PNG are allowed."));
+            cb(new Error(`Invalid file type. Only ${allowedTypes.join(", ")} are allowed.`));
         }
     };
     return (0, multer_1.default)({

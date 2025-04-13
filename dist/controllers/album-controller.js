@@ -8,6 +8,7 @@ const album_model_1 = require("../models/album-model");
 const helper_1 = require("../helper");
 const fs_1 = __importDefault(require("fs"));
 const path_1 = __importDefault(require("path"));
+const handleUploadError_1 = require("../middleware/handleUploadError");
 // 🎯 Create Album
 const createAlbum = async (req, res) => {
     try {
@@ -29,6 +30,7 @@ const createAlbum = async (req, res) => {
         (0, helper_1.successResponse)(res, "Album created successfully", { album: modifiedAlbum });
     }
     catch (error) {
+        (0, handleUploadError_1.removeUploadedFile)(req);
         (0, helper_1.errorResponse)(res, "Error creating album", {});
     }
 };
@@ -90,6 +92,7 @@ const updateAlbum = async (req, res) => {
         }
     }
     catch (error) {
+        (0, handleUploadError_1.removeUploadedFile)(req);
         (0, helper_1.errorResponse)(res, "Error updating album", {});
     }
 };

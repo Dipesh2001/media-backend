@@ -29,7 +29,7 @@ export const errorResponse = (
 
 export const formatImagePath = (relativePath: string | undefined | null): string => {
   if (!relativePath) return "";
-  const baseUrl = process.env.BASE_URL || "http://localhost:5000";
+  const baseUrl = process.env.BASE_URL || "http://localhost:8000";
   const cleanedPath = relativePath.replace(/^.*uploads/, "/uploads").replace(/\\/g, "/");
   return `${baseUrl}${cleanedPath}`;
 };

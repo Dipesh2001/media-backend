@@ -32,30 +32,45 @@ var __importStar = (this && this.__importStar) || (function () {
         return result;
     };
 })();
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.Album = void 0;
-const mongoose_1 = __importStar(require("mongoose"));
-const AlbumSchema = new mongoose_1.Schema({
-    name: { type: String, required: true },
-    coverImage: { type: String, required: false },
-    artists: [{ type: mongoose_1.Schema.Types.ObjectId, ref: "Artist", required: false }], // 👈 modified
-    genre: { type: String, required: true },
-    language: { type: String, required: true },
-    description: { type: String },
-    releaseDate: { type: Date, required: true },
-    status: { type: Boolean, default: true },
-    likes: { type: Number, default: 0 },
-}, { timestamps: true, versionKey: false });
-// Automatically format the coverImage to full URL
-AlbumSchema.method("toJSON", function () {
-    const album = this.toObject();
-    const baseUrl = process.env.BASE_URL || "http://localhost:8000";
-    if (album.coverImage) {
-        album.coverImage = `${baseUrl}/${album.coverImage.replace(/\\/g, "/").replace(/^.*uploads/, "uploads")}`;
-    }
-    return album;
-});
-AlbumSchema.statics.findByIdWithArtists = function (id) {
-    return this.findById(id).populate("artists", "name image");
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
 };
-exports.Album = mongoose_1.default.model("Album", AlbumSchema);
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.User = void 0;
+const mongoose_1 = __importStar(require("mongoose"));
+const bcryptjs_1 = __importDefault(require("bcryptjs"));
+// User Schema
+const UserSchema = new mongoose_1.Schema({
+    name: { type: String, required: true },
+    email: { type: String, required: true, unique: true },
+    password: { type: String, required: true },
+    profileImage: { type: String },
+    favoriteSongs: [
+        { type: mongoose_1.Schema.Types.ObjectId, ref: "Song", default: [] },
+    ],
+    favoriteAlbums: [
+        { type: mongoose_1.Schema.Types.ObjectId, ref: "Album", default: [] },
+    ],
+    favoritePlaylists: [
+        { type: mongoose_1.Schema.Types.ObjectId, ref: "Playlist", default: [] },
+    ],
+    followedArtists: [
+        { type: mongoose_1.Schema.Types.ObjectId, ref: "Artist", default: [] },
+    ],
+    myPlaylists: [
+        { type: mongoose_1.Schema.Types.ObjectId, ref: "Playlist", default: [] },
+    ],
+}, { timestamps: true, versionKey: false });
+// 🔐 Password Hashing
+UserSchema.pre("save", async function (next) {
+    if (!this.isModified("password"))
+        return next();
+    const salt = await bcryptjs_1.default.genSalt(10);
+    this.password = await bcryptjs_1.default.hash(this.password, salt);
+    next();
+});
+// 🔍 Compare Password
+UserSchema.methods.comparePassword = async function (candidatePassword) {
+    return await bcryptjs_1.default.compare(candidatePassword, this.password);
+};
+exports.User = mongoose_1.default.model("User", UserSchema);

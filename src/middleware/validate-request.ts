@@ -1,8 +1,8 @@
 import { Request, Response, NextFunction, RequestHandler } from "express";
 import { ZodSchema, ZodError } from "zod";
 
-export function validateRequest(schema: ZodSchema) : RequestHandler {
-  return (req:Request, res:Response, next:NextFunction) => {
+export function validateRequest(schema: ZodSchema): RequestHandler {
+  return (req: Request, res: Response, next: NextFunction) => {
     try {
       schema.parse(req.body);
       next(); // Continue to the controller if validation passes

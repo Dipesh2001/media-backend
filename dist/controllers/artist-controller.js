@@ -7,6 +7,7 @@ exports.toggleArtistStatus = exports.deleteArtist = exports.updateArtist = expor
 const artist_model_1 = require("../models/artist-model");
 const helper_1 = require("../helper");
 const fs_1 = __importDefault(require("fs"));
+const handleUploadError_1 = require("../middleware/handleUploadError");
 // ➕ Create Artist
 const createArtist = async (req, res) => {
     try {
@@ -30,6 +31,7 @@ const createArtist = async (req, res) => {
         (0, helper_1.successResponse)(res, "Artist created successfully", { artist: newArtist });
     }
     catch (error) {
+        (0, handleUploadError_1.removeUploadedFile)(req);
         (0, helper_1.errorResponse)(res, "Error creating artist", {});
     }
 };
@@ -66,7 +68,8 @@ const updateArtist = async (req, res) => {
         const artistId = req.params.id;
         const artist = await artist_model_1.Artist.findById(artistId);
         if (!artist) {
-            return (0, helper_1.errorResponse)(res, "Artist not found", {});
+            (0, helper_1.errorResponse)(res, "Artist not found", {});
+            return;
         }
         else {
             // If a new image is uploaded, replace the old one
@@ -88,7 +91,7 @@ const updateArtist = async (req, res) => {
         (0, helper_1.successResponse)(res, "Artist updated successfully", { artist });
     }
     catch (error) {
-        console.log({ error });
+        (0, handleUploadError_1.removeUploadedFile)(req);
         (0, helper_1.errorResponse)(res, "Failed to update artist", {});
     }
 };

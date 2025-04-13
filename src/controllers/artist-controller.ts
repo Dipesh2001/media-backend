@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import { Artist, IArtist } from "../models/artist-model";
 import { errorResponse, formatImagePath, successResponse } from "../helper";
 import fs from "fs";
+import { removeUploadedFile } from "../middleware/handleUploadError";
 
 // ➕ Create Artist
 export const createArtist = async (req: Request, res: Response) => {
@@ -28,6 +29,7 @@ export const createArtist = async (req: Request, res: Response) => {
     await newArtist.save();
     successResponse(res, "Artist created successfully", { artist: newArtist });
   } catch (error) {
+    removeUploadedFile(req);
     errorResponse(res, "Error creating artist", {});
   }
 };
@@ -63,7 +65,8 @@ export const updateArtist = async (req: Request, res: Response) => {
 
     const artist = await Artist.findById(artistId);
     if (!artist) {
-      return errorResponse(res, "Artist not found", {});
+      errorResponse(res, "Artist not found", {});
+      return;
     }else{
          // If a new image is uploaded, replace the old one
     if (req.file) {
@@ -85,7 +88,7 @@ export const updateArtist = async (req: Request, res: Response) => {
     }
     successResponse(res, "Artist updated successfully", { artist });
   } catch (error) {
-    console.log({error})
+    removeUploadedFile(req);
     errorResponse(res, "Failed to update artist", {});
   }
 };

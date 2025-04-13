@@ -33,29 +33,25 @@ var __importStar = (this && this.__importStar) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.Album = void 0;
+exports.Song = void 0;
 const mongoose_1 = __importStar(require("mongoose"));
-const AlbumSchema = new mongoose_1.Schema({
+const songSchema = new mongoose_1.Schema({
     name: { type: String, required: true },
-    coverImage: { type: String, required: false },
-    artists: [{ type: mongoose_1.Schema.Types.ObjectId, ref: "Artist", required: false }], // 👈 modified
-    genre: { type: String, required: true },
-    language: { type: String, required: true },
+    album: { type: mongoose_1.Schema.Types.ObjectId, ref: "Album", required: true },
+    artists: [{ type: mongoose_1.Schema.Types.ObjectId, ref: "Artist" }],
+    audioFile: { type: String, required: true },
+    duration: { type: Number, required: true },
     description: { type: String },
-    releaseDate: { type: Date, required: true },
     status: { type: Boolean, default: true },
+    plays: { type: Number, default: 0 },
     likes: { type: Number, default: 0 },
-}, { timestamps: true, versionKey: false });
-// Automatically format the coverImage to full URL
-AlbumSchema.method("toJSON", function () {
-    const album = this.toObject();
+}, { timestamps: true });
+songSchema.method("toJSON", function () {
+    const song = this.toObject();
     const baseUrl = process.env.BASE_URL || "http://localhost:8000";
-    if (album.coverImage) {
-        album.coverImage = `${baseUrl}/${album.coverImage.replace(/\\/g, "/").replace(/^.*uploads/, "uploads")}`;
+    if (song.audioFile) {
+        song.audioFile = `${baseUrl}/${song.audioFile.replace(/\\/g, "/").replace(/^.*uploads/, "uploads")}`;
     }
-    return album;
+    return song;
 });
-AlbumSchema.statics.findByIdWithArtists = function (id) {
-    return this.findById(id).populate("artists", "name image");
-};
-exports.Album = mongoose_1.default.model("Album", AlbumSchema);
+exports.Song = mongoose_1.default.model("song", songSchema);

@@ -15,11 +15,11 @@ export const upload = (folderName: string, allowedTypes: string[]) => {
     },
   });
 
-  const fileFilter = (req: any, file: Express.Multer.File, cb: multer.FileFilterCallback) => {
+  const fileFilter = (req: any, file: Express.Multer.File, cb: multer.FileFilterCallback) => {    
     if (allowedTypes.includes(file.mimetype)) {
       cb(null, true);
     } else {
-      cb(new Error("Invalid file type. Only JPG, JPEG, PNG are allowed."));
+      cb(new Error(`Invalid file type. Only ${allowedTypes.join(", ")} are allowed.`));
     }
   };
 

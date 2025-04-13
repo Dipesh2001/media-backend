@@ -9,6 +9,7 @@ export interface IAlbum extends Document {
   description?: string;
   releaseDate: Date;
   status: boolean;
+  likes:number,
 }
 
 const AlbumSchema = new Schema<IAlbum>(
@@ -21,6 +22,7 @@ const AlbumSchema = new Schema<IAlbum>(
     description: { type: String },
     releaseDate: { type: Date, required: true },
     status: { type: Boolean, default: true },
+    likes: { type: Number, default: 0 },
   },
   { timestamps: true, versionKey: false }
 );
@@ -34,7 +36,7 @@ interface AlbumModel extends Model<IAlbum> {
 // Automatically format the coverImage to full URL
 AlbumSchema.method("toJSON", function () {
   const album = this.toObject();
-  const baseUrl = process.env.BASE_URL || "http://localhost:5000";
+  const baseUrl = process.env.BASE_URL || "http://localhost:8000";
   if (album.coverImage) {
     album.coverImage = `${baseUrl}/${album.coverImage.replace(/\\/g, "/").replace(/^.*uploads/, "uploads")}`;
   }

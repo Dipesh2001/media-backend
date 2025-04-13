@@ -3,6 +3,7 @@ import { Album } from "../models/album-model";
 import { errorResponse, successResponse } from "../helper";
 import fs from "fs";
 import path from "path";
+import { removeUploadedFile } from "../middleware/handleUploadError";
 
 // 🎯 Create Album
 export const createAlbum = async (req: Request, res: Response) => {
@@ -27,6 +28,7 @@ export const createAlbum = async (req: Request, res: Response) => {
 
     successResponse(res, "Album created successfully", { album: modifiedAlbum });
   } catch (error) {
+    removeUploadedFile(req);
     errorResponse(res, "Error creating album", {});
   }
 };
@@ -86,6 +88,7 @@ export const updateAlbum = async (req: Request, res: Response) => {
       successResponse(res, "Album updated successfully", { album:modifiedAlbum });
     }    
   } catch (error) {
+    removeUploadedFile(req);
     errorResponse(res, "Error updating album", {});
   }
 };
