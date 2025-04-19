@@ -38,8 +38,22 @@ exports.createAlbum = createAlbum;
 // 📚 Get All Albums
 const getAllAlbums = async (req, res) => {
     try {
-        const albums = await album_model_1.Album.find().populate("artists", "name image");
-        (0, helper_1.successResponse)(res, "Albums fetched successfully", { albums });
+        const page = parseInt(req.query.page) || 1;
+        const size = parseInt(req.query.size) || 10;
+        const total = await album_model_1.Album.countDocuments();
+        const albums = await album_model_1.Album.find().populate("artists", "name image")
+            .skip((page - 1) * size)
+            .limit(size)
+            .sort({ createdAt: -1 });
+        (0, helper_1.successResponse)(res, "Albums fetched successfully", {
+            albums,
+            pagination: {
+                page,
+                size,
+                totalPages: Math.ceil(total / size),
+                totalItems: total,
+            },
+        });
     }
     catch (error) {
         console.log({ error });

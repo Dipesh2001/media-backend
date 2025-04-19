@@ -47,12 +47,14 @@ const ArtistSchema = new mongoose_1.Schema({
         twitter: { type: String },
         facebook: { type: String },
     },
+    followers: { type: Number, default: 0 },
     isActive: { type: Boolean, default: true },
 }, { timestamps: true, versionKey: false });
 ArtistSchema.method("toJSON", function () {
     const artist = this.toObject();
     const baseUrl = process.env.BASE_URL || "http://localhost:8000";
     if (artist.image) {
+        // Convert local image path to full URL
         artist.image = `${baseUrl}/${artist.image.replace(/\\/g, "/").replace(/^.*uploads/, "uploads")}`;
     }
     return artist;

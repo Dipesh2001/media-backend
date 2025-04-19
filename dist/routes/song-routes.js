@@ -11,22 +11,22 @@ const song_validation_1 = require("../validations/song-validation");
 const upload_1 = require("../middleware/upload");
 const handleUploadError_1 = require("../middleware/handleUploadError");
 const router = express_1.default.Router();
-router.post("/", auth_1.authAdmin, (req, res, next) => {
+router.post("/", (0, auth_1.auth)("admin"), (req, res, next) => {
     (0, upload_1.upload)("audio_files", ["audio/mpeg", "audio/mp3", "audio/mp4"]).single("audioFile")(req, res, function (err) {
         if (err)
             return (0, handleUploadError_1.handleUploadError)(req, res, err);
         next();
     });
 }, (0, validate_request_1.validateRequest)(song_validation_1.createSongSchema), song_controller_1.createSong);
-router.get("/", auth_1.authAdmin, song_controller_1.getAllSongs);
-router.get("/:id", auth_1.authAdmin, song_controller_1.getSongById);
-router.put("/:id", auth_1.authAdmin, (req, res, next) => {
+router.get("/", (0, auth_1.auth)("admin"), song_controller_1.getAllSongs);
+router.get("/:id", (0, auth_1.auth)("admin"), song_controller_1.getSongById);
+router.put("/:id", (0, auth_1.auth)("admin"), (req, res, next) => {
     (0, upload_1.upload)("audio_files", ["audio/mpeg", "audio/mp3", "audio/mp4"]).single("audioFile")(req, res, function (err) {
         if (err)
             return (0, handleUploadError_1.handleUploadError)(req, res, err);
         next();
     });
 }, (0, validate_request_1.validateRequest)(song_validation_1.updateSongSchema), song_controller_1.updateSong);
-router.delete("/:id", auth_1.authAdmin, song_controller_1.deleteSong);
-router.put("/:id/status", auth_1.authAdmin, song_controller_1.toggleSongStatus);
+router.delete("/:id", (0, auth_1.auth)("admin"), song_controller_1.deleteSong);
+router.put("/:id/status", (0, auth_1.auth)("admin"), song_controller_1.toggleSongStatus);
 exports.default = router;

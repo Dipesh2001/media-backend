@@ -10,6 +10,7 @@ const artist_routes_1 = __importDefault(require("./routes/artist-routes"));
 const album_routes_1 = __importDefault(require("./routes/album-routes"));
 const song_routes_1 = __importDefault(require("./routes/song-routes"));
 const playlist_routes_1 = __importDefault(require("./routes/playlist-routes"));
+const user_routes_1 = __importDefault(require("./routes/user-routes"));
 const error_handler_1 = require("./middleware/error-handler");
 const cors_1 = __importDefault(require("cors"));
 const cookie_parser_1 = __importDefault(require("cookie-parser"));
@@ -24,6 +25,7 @@ app.use("/api/artist", artist_routes_1.default);
 app.use("/api/album", album_routes_1.default);
 app.use("/api/song", song_routes_1.default);
 app.use("/api/playlist", playlist_routes_1.default);
+app.use("/api/user", user_routes_1.default);
 app.get("/", (req, res) => {
     res.send("Hello, TypeScript with Express");
 });

@@ -8,7 +8,7 @@ import {
   toggleArtistStatus,
 } from "../controllers/artist-controller";
 import { validateRequest } from "../middleware/validate-request";
-import { authAdmin } from "../middleware/auth";
+import { auth } from "../middleware/auth";
 import {
   createArtistSchema,
   updateArtistSchema,
@@ -19,7 +19,7 @@ import { upload } from "../middleware/upload";
 const router = express.Router();
 
 // Create new artist
-router.post("/", authAdmin,
+router.post("/", auth("admin"),
   (req, res, next) => {
     upload("artist_images", ["image/jpg", "image/jpeg", "image/png"]).single("image")(req, res, function (err) {
       if (err) {
@@ -27,16 +27,16 @@ router.post("/", authAdmin,
       }
       next();
     });
-  },validateRequest(createArtistSchema), createArtist);
+  }, validateRequest(createArtistSchema), createArtist);
 
 // Get all artists (optionally add pagination/query later)
-router.get("/", authAdmin, getAllArtists);
+router.get("/", auth("admin"), getAllArtists);
 
 // Get single artist by ID
-router.get("/:id", authAdmin, getArtistById);
+router.get("/:id", auth("admin"), getArtistById);
 
 // Update artist by ID
-router.put("/:id", authAdmin,
+router.put("/:id", auth("admin"),
   (req, res, next) => {
     upload("artist_images", ["image/jpg", "image/jpeg", "image/png"]).single("image")(req, res, function (err) {
       if (err) {
@@ -47,9 +47,9 @@ router.put("/:id", authAdmin,
   }, validateRequest(updateArtistSchema), updateArtist);
 
 // Soft delete artist
-router.delete("/:id", authAdmin, deleteArtist);
+router.delete("/:id", auth("admin"), deleteArtist);
 
 // Toggle active/inactive status
-router.patch("/:id/status", authAdmin, toggleArtistStatus);
+router.patch("/:id/status", auth("admin"), toggleArtistStatus);
 
 export default router;

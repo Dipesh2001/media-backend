@@ -9,7 +9,7 @@ export interface IAlbum extends Document {
   description?: string;
   releaseDate: Date;
   status: boolean;
-  likes:number,
+  likes: number,
 }
 
 const AlbumSchema = new Schema<IAlbum>(
@@ -37,14 +37,14 @@ interface AlbumModel extends Model<IAlbum> {
 AlbumSchema.method("toJSON", function () {
   const album = this.toObject();
   const baseUrl = process.env.BASE_URL || "http://localhost:8000";
-  if (album.coverImage) {
+  if (album.coverImage && album.coverImage.startsWith("uploads")) {
     album.coverImage = `${baseUrl}/${album.coverImage.replace(/\\/g, "/").replace(/^.*uploads/, "uploads")}`;
   }
   return album;
 });
 
 AlbumSchema.statics.findByIdWithArtists = function (id: string) {
-  return this.findById(id).populate("artists","name image");
+  return this.findById(id).populate("artists", "name image");
 };
 
-export const Album = mongoose.model<IAlbum,AlbumModel>("Album", AlbumSchema);
+export const Album = mongoose.model<IAlbum, AlbumModel>("Album", AlbumSchema);

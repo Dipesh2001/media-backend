@@ -4,9 +4,9 @@ const mongoose_1 = require("mongoose");
 const playlistSchema = new mongoose_1.Schema({
     name: { type: String, required: true },
     coverImage: { type: String },
-    songs: [{ type: mongoose_1.Schema.Types.ObjectId, ref: "song", required: true }],
+    songs: [{ type: mongoose_1.Schema.Types.ObjectId, ref: "Song", required: true }],
     createdBy: { type: String, enum: ["admin", "user"], required: true },
-    user: { type: mongoose_1.Schema.Types.ObjectId, ref: "user" },
+    user: { type: mongoose_1.Schema.Types.ObjectId, ref: "User" },
     likesCount: { type: Number, default: 0 },
     status: { type: Boolean, default: true },
 }, { timestamps: true });
@@ -18,5 +18,5 @@ playlistSchema.methods.toJSON = function () {
     }
     return obj;
 };
-const Playlist = (0, mongoose_1.model)("playlist", playlistSchema);
+const Playlist = (0, mongoose_1.model)("Playlist", playlistSchema);
 exports.default = Playlist;

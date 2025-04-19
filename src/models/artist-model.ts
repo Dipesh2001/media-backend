@@ -12,6 +12,7 @@ export interface IArtist extends Document {
     twitter?: string;
     facebook?: string;
   };
+  followers: number;
   isActive: boolean;
 }
 
@@ -28,6 +29,7 @@ const ArtistSchema = new Schema<IArtist>(
       twitter: { type: String },
       facebook: { type: String },
     },
+    followers: { type: Number, default: 0 },
     isActive: { type: Boolean, default: true },
   },
   { timestamps: true, versionKey: false }
@@ -38,6 +40,7 @@ ArtistSchema.method("toJSON", function () {
   const baseUrl = process.env.BASE_URL || "http://localhost:8000";
 
   if (artist.image) {
+    // Convert local image path to full URL
     artist.image = `${baseUrl}/${artist.image.replace(/\\/g, "/").replace(/^.*uploads/, "uploads")}`;
   }
 

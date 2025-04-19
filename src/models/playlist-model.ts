@@ -14,9 +14,9 @@ const playlistSchema = new Schema<IPlaylist>(
   {
     name: { type: String, required: true },
     coverImage: { type: String },
-    songs: [{ type: Schema.Types.ObjectId, ref: "song", required: true }],
+    songs: [{ type: Schema.Types.ObjectId, ref: "Song", required: true }],
     createdBy: { type: String, enum: ["admin", "user"], required: true },
-    user: { type: Schema.Types.ObjectId, ref: "user" },
+    user: { type: Schema.Types.ObjectId, ref: "User" },
     likesCount: { type: Number, default: 0 },
     status: { type: Boolean, default: true },
   },
@@ -32,5 +32,5 @@ playlistSchema.methods.toJSON = function () {
   return obj;
 };
 
-const Playlist = model<IPlaylist>("playlist", playlistSchema);
+const Playlist = model<IPlaylist>("Playlist", playlistSchema);
 export default Playlist;

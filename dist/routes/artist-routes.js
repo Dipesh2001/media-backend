@@ -12,7 +12,7 @@ const handleUploadError_1 = require("../middleware/handleUploadError");
 const upload_1 = require("../middleware/upload");
 const router = express_1.default.Router();
 // Create new artist
-router.post("/", auth_1.authAdmin, (req, res, next) => {
+router.post("/", (0, auth_1.auth)("admin"), (req, res, next) => {
     (0, upload_1.upload)("artist_images", ["image/jpg", "image/jpeg", "image/png"]).single("image")(req, res, function (err) {
         if (err) {
             return (0, handleUploadError_1.handleUploadError)(req, res, err);
@@ -21,11 +21,11 @@ router.post("/", auth_1.authAdmin, (req, res, next) => {
     });
 }, (0, validate_request_1.validateRequest)(artist_validation_1.createArtistSchema), artist_controller_1.createArtist);
 // Get all artists (optionally add pagination/query later)
-router.get("/", auth_1.authAdmin, artist_controller_1.getAllArtists);
+router.get("/", (0, auth_1.auth)("admin"), artist_controller_1.getAllArtists);
 // Get single artist by ID
-router.get("/:id", auth_1.authAdmin, artist_controller_1.getArtistById);
+router.get("/:id", (0, auth_1.auth)("admin"), artist_controller_1.getArtistById);
 // Update artist by ID
-router.put("/:id", auth_1.authAdmin, (req, res, next) => {
+router.put("/:id", (0, auth_1.auth)("admin"), (req, res, next) => {
     (0, upload_1.upload)("artist_images", ["image/jpg", "image/jpeg", "image/png"]).single("image")(req, res, function (err) {
         if (err) {
             return (0, handleUploadError_1.handleUploadError)(req, res, err);
@@ -34,7 +34,7 @@ router.put("/:id", auth_1.authAdmin, (req, res, next) => {
     });
 }, (0, validate_request_1.validateRequest)(artist_validation_1.updateArtistSchema), artist_controller_1.updateArtist);
 // Soft delete artist
-router.delete("/:id", auth_1.authAdmin, artist_controller_1.deleteArtist);
+router.delete("/:id", (0, auth_1.auth)("admin"), artist_controller_1.deleteArtist);
 // Toggle active/inactive status
-router.patch("/:id/status", auth_1.authAdmin, artist_controller_1.toggleArtistStatus);
+router.patch("/:id/status", (0, auth_1.auth)("admin"), artist_controller_1.toggleArtistStatus);
 exports.default = router;

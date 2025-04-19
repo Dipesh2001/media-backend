@@ -50,7 +50,7 @@ const AlbumSchema = new mongoose_1.Schema({
 AlbumSchema.method("toJSON", function () {
     const album = this.toObject();
     const baseUrl = process.env.BASE_URL || "http://localhost:8000";
-    if (album.coverImage) {
+    if (album.coverImage && album.coverImage.startsWith("uploads")) {
         album.coverImage = `${baseUrl}/${album.coverImage.replace(/\\/g, "/").replace(/^.*uploads/, "uploads")}`;
     }
     return album;

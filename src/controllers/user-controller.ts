@@ -1,9 +1,12 @@
 import { Request, Response } from "express";
-import { User } from "../models/user-model";
 import jwt from "jsonwebtoken";
-import bcrypt from "bcryptjs";
 import { successResponse, errorResponse } from "../helper";
 import { authRequest } from "../middleware/auth";
+import { Album } from "../models/album-model";
+import { Song } from "../models/song-model";
+import Playlist from "../models/playlist-model";
+import { User } from "../models/user-model";
+import { Artist } from "../models/artist-model";
 
 export const createUser = async (req: Request, res: Response) => {
   try {
@@ -44,57 +47,127 @@ export const loginUser = async (req: Request, res: Response) => {
 };
 
 export const logoutUser = async (req: authRequest, res: Response) => {
-  res.clearCookie("validateUserToken", {
-    httpOnly: true,
-    secure: process.env.NODE_ENV !== "development",
-    sameSite: "strict",
-  });
-  successResponse(res, "Logged out");
+  try {
+    res.clearCookie("validateUserToken", {
+      httpOnly: true,
+      secure: process.env.NODE_ENV !== "development",
+      sameSite: "strict",
+    });
+    successResponse(res, "Logged out");
+  } catch (error) {
+    errorResponse(res, "Error during logout");
+  }
 };
 
 export const validateUserToken = async (req: authRequest, res: Response) => {
-  successResponse(res, "User validated", {
-    user: req.user,
-    authToken: req.authToken,
-  });
+  try {
+    successResponse(res, "User validated", {
+      user: req.user,
+      authToken: req.authToken,
+    });
+  } catch (error) {
+    errorResponse(res, "Error validating user");
+  }
 };
 
 export const addToFavorites = async (req: authRequest, res: Response) => {
-  const { type, id } = req.body;
-  await User.findByIdAndUpdate(req.user._id, {
-    $addToSet: { [type]: id },
-  });
-  successResponse(res, "Added to favorites");
+  try {
+    const { type, id } = req.body;
+
+    // Update user
+    await User.findByIdAndUpdate(req.user?._id, {
+      $addToSet: { [type]: id },
+    });
+
+    // Update like count on the related model
+    switch (type) {
+      case "favoriteSongs":
+        await Song.findByIdAndUpdate(id, { $inc: { likes: 1 } });
+        break;
+      case "favoriteAlbums":
+        await Album.findByIdAndUpdate(id, { $inc: { likes: 1 } });
+        break;
+      case "favoritePlaylists":
+        await Playlist.findByIdAndUpdate(id, { $inc: { likes: 1 } });
+        break;
+      default:
+        return errorResponse(res, "Invalid favorite type");
+    }
+
+    successResponse(res, "Added to favorites");
+  } catch (error) {
+    errorResponse(res, "Failed to add to favorites");
+  }
 };
 
 export const removeFromFavorites = async (req: authRequest, res: Response) => {
-  const { type, id } = req.body;
-  await User.findByIdAndUpdate(req.user._id, {
-    $pull: { [type]: id },
-  });
-  successResponse(res, "Removed from favorites");
+  try {
+    const { type, id } = req.body;
+
+    // Update user
+    await User.findByIdAndUpdate(req.user?._id, {
+      $pull: { [type]: id },
+    });
+
+    // Update like count on the related model
+    switch (type) {
+      case "favoriteSongs":
+        await Song.findByIdAndUpdate(id, { $inc: { likes: -1 } });
+        break;
+      case "favoriteAlbums":
+        await Album.findByIdAndUpdate(id, { $inc: { likes: -1 } });
+        break;
+      case "favoritePlaylists":
+        await Playlist.findByIdAndUpdate(id, { $inc: { likes: -1 } });
+        break;
+      default:
+        return errorResponse(res, "Invalid favorite type");
+    }
+
+    successResponse(res, "Removed from favorites");
+  } catch (error) {
+    errorResponse(res, "Failed to remove from favorites");
+  }
 };
 
 export const followArtist = async (req: authRequest, res: Response) => {
-  const { artistId } = req.body;
-  await User.findByIdAndUpdate(req.user._id, {
-    $addToSet: { followedArtists: artistId },
-  });
-  successResponse(res, "Followed artist");
+  try {
+    const { artistId } = req.body;
+    await User.findByIdAndUpdate(req.user?._id, {
+      $addToSet: { followedArtists: artistId },
+    });
+    await Artist.findByIdAndUpdate(artistId, { $inc: { followers: 1 } });
+    successResponse(res, "Followed artist");
+  } catch (error) {
+    errorResponse(res, "Failed to follow artist");
+  }
 };
 
 export const unfollowArtist = async (req: authRequest, res: Response) => {
-  const { artistId } = req.body;
-  await User.findByIdAndUpdate(req.user._id, {
-    $pull: { followedArtists: artistId },
-  });
-  successResponse(res, "Unfollowed artist");
+  try {
+    const { artistId } = req.body;
+    await User.findByIdAndUpdate(req.user?._id, {
+      $pull: { followedArtists: artistId },
+    });
+    successResponse(res, "Unfollowed artist");
+  } catch (error) {
+    errorResponse(res, "Failed to unfollow artist");
+  }
 };
 
 export const getUserProfile = async (req: authRequest, res: Response) => {
-  const user = await User.findById(req.user._id)
-    .populate("favoriteSongs favoriteAlbums favoritePlaylists followedArtists myPlaylists");
+  try {
+    const user = await User.findById(req.user?._id)
+      .populate("favoriteSongs", "id name")
+      .populate("favoriteAlbums", "id name")
+      .populate("favoritePlaylists", "id name")
+      .populate("followedArtists", "id name")
+      .populate("myPlaylists", "id name");
 
-  if (!user) return errorResponse(res, "User not found");
-  successResponse(res, "User profile", { user });
+    if (!user) return errorResponse(res, "User not found");
+    successResponse(res, "User profile", { user });
+  } catch (error) {
+    console.error(error);
+    errorResponse(res, "Failed to fetch user profile");
+  }
 };

@@ -1,4 +1,4 @@
-import mongoose, { Schema, Document, Types  } from "mongoose";
+import mongoose, { Schema, Document, Types } from "mongoose";
 
 export interface ISong extends Document {
   name: string;
@@ -38,4 +38,4 @@ songSchema.method("toJSON", function () {
   return song;
 });
 
-export const Song = mongoose.model<ISong>("song", songSchema);
+export const Song = mongoose.model<ISong>("Song", songSchema);

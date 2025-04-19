@@ -36,10 +36,26 @@ export const createAlbum = async (req: Request, res: Response) => {
 // 📚 Get All Albums
 export const getAllAlbums = async (req: Request, res: Response) => {
   try {
-    const albums = await Album.find().populate("artists","name image");
-    successResponse(res, "Albums fetched successfully", { albums });
+    const page = parseInt(req.query.page as string) || 1;
+    const size = parseInt(req.query.size as string) || 10;
+
+    const total = await Album.countDocuments();
+
+    const albums = await Album.find().populate("artists", "name image")
+      .skip((page - 1) * size)
+      .limit(size)
+      .sort({ createdAt: -1 });
+    successResponse(res, "Albums fetched successfully", {
+      albums,
+      pagination: {
+        page,
+        size,
+        totalPages: Math.ceil(total / size),
+        totalItems: total,
+      },
+    });
   } catch (error) {
-    console.log({error});
+    console.log({ error });
     errorResponse(res, "Error fetching albums", {});
   }
 };
@@ -47,11 +63,11 @@ export const getAllAlbums = async (req: Request, res: Response) => {
 // 🔍 Get Album by ID
 export const getAlbumById = async (req: Request, res: Response) => {
   try {
-    const album = await Album.findById(req.params.id).populate("artists","name image");
+    const album = await Album.findById(req.params.id).populate("artists", "name image");
     if (!album) return errorResponse(res, "Album not found", {});
     successResponse(res, "Album fetched successfully", { album });
   } catch (error) {
-    console.log({error})
+    console.log({ error })
     errorResponse(res, "Error fetching album", {});
   }
 };
@@ -61,8 +77,8 @@ export const updateAlbum = async (req: Request, res: Response) => {
   try {
     const album = await Album.findById(req.params.id);
     if (!album) {
-     return errorResponse(res, "Album not found", {});
-    }else{
+      return errorResponse(res, "Album not found", {});
+    } else {
       const { name, artists, genre, language, description, releaseDate } = req.body;
 
       album.name = name;
@@ -71,7 +87,7 @@ export const updateAlbum = async (req: Request, res: Response) => {
       album.language = language;
       album.description = description;
       album.releaseDate = releaseDate;
-  
+
       // 📸 Replace image if new uploaded
       if (req.file) {
         if (album.coverImage) {
@@ -81,12 +97,12 @@ export const updateAlbum = async (req: Request, res: Response) => {
         }
         album.coverImage = req.file.path.replace(/\\/g, "/");
       }
-  
+
       const response = await album.save();
       const modifiedAlbum = await Album.findByIdWithArtists(String(response._id));
 
-      successResponse(res, "Album updated successfully", { album:modifiedAlbum });
-    }    
+      successResponse(res, "Album updated successfully", { album: modifiedAlbum });
+    }
   } catch (error) {
     removeUploadedFile(req);
     errorResponse(res, "Error updating album", {});
@@ -99,13 +115,13 @@ export const deleteAlbum = async (req: Request, res: Response) => {
     const album = await Album.findById(req.params.id);
     if (!album) {
       errorResponse(res, "Album not found", {});
-    }else{
+    } else {
       if (album.coverImage) {
         fs.unlink(path.join(album.coverImage), err => {
           if (err) console.log("Failed to delete image:", err);
         });
       }
-  
+
       await album.deleteOne();
       successResponse(res, "Album deleted successfully");
     }
@@ -118,14 +134,14 @@ export const deleteAlbum = async (req: Request, res: Response) => {
 export const toggleAlbumStatus = async (req: Request, res: Response) => {
   try {
     const modifiedAlbum = await Album.findByIdWithArtists(String(req.params.id));
-    
-    if (!modifiedAlbum){
+
+    if (!modifiedAlbum) {
       errorResponse(res, "Album not found", {});
-    }else{
+    } else {
       modifiedAlbum.status = !modifiedAlbum.status;
       await modifiedAlbum.save();
-      successResponse(res, "Album status updated successfully", { album:modifiedAlbum });
-    } 
+      successResponse(res, "Album status updated successfully", { album: modifiedAlbum });
+    }
   } catch (error) {
     errorResponse(res, "Error updating album status", {});
   }

@@ -1,5 +1,5 @@
 import express from "express";
-import { authAdmin } from "../middleware/auth";
+import { auth } from "../middleware/auth";
 import {
   createSong,
   getAllSongs,
@@ -17,9 +17,9 @@ const router = express.Router();
 
 router.post(
   "/",
-  authAdmin,
+  auth("admin"),
   (req, res, next) => {
-    upload("audio_files", ["audio/mpeg", "audio/mp3","audio/mp4"]).single("audioFile")(req, res, function (err) {
+    upload("audio_files", ["audio/mpeg", "audio/mp3", "audio/mp4"]).single("audioFile")(req, res, function (err) {
       if (err) return handleUploadError(req, res, err);
       next();
     });
@@ -28,14 +28,14 @@ router.post(
   createSong
 );
 
-router.get("/", authAdmin, getAllSongs);
-router.get("/:id", authAdmin, getSongById);
+router.get("/", auth("admin"), getAllSongs);
+router.get("/:id", auth("admin"), getSongById);
 
 router.put(
   "/:id",
-  authAdmin,
+  auth("admin"),
   (req, res, next) => {
-    upload("audio_files", ["audio/mpeg", "audio/mp3","audio/mp4"]).single("audioFile")(req, res, function (err) {
+    upload("audio_files", ["audio/mpeg", "audio/mp3", "audio/mp4"]).single("audioFile")(req, res, function (err) {
       if (err) return handleUploadError(req, res, err);
       next();
     });
@@ -44,7 +44,7 @@ router.put(
   updateSong
 );
 
-router.delete("/:id", authAdmin, deleteSong);
-router.put("/:id/status", authAdmin, toggleSongStatus);
+router.delete("/:id", auth("admin"), deleteSong);
+router.put("/:id/status", auth("admin"), toggleSongStatus);
 
 export default router;

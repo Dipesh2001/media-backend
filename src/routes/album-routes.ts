@@ -1,5 +1,5 @@
 import express from "express";
-import { authAdmin } from "../middleware/auth";
+import { auth } from "../middleware/auth";
 import { validateRequest } from "../middleware/validate-request";
 import { upload } from "../middleware/upload";
 import { handleUploadError } from "../middleware/handleUploadError";
@@ -18,7 +18,7 @@ const router = express.Router();
 // 📦 Create Album
 router.post(
   "/",
-  authAdmin,
+  auth("admin"),
   (req, res, next) => {
     upload("album_images", ["image/jpg", "image/jpeg", "image/png"]).single("coverImage")(req, res, function (err) {
       if (err) {
@@ -32,15 +32,15 @@ router.post(
 );
 
 // 📚 Get All Albums
-router.get("/", authAdmin, getAllAlbums);
+router.get("/", auth("admin"), getAllAlbums);
 
 // 🔍 Get Single Album
-router.get("/:id", authAdmin, getAlbumById);
+router.get("/:id", auth("admin"), getAlbumById);
 
 // ✏️ Update Album
 router.put(
   "/:id",
-  authAdmin,
+  auth("admin"),
   (req, res, next) => {
     upload("album_images", ["image/jpg", "image/jpeg", "image/png"]).single("coverImage")(req, res, function (err) {
       if (err) {
@@ -54,9 +54,9 @@ router.put(
 );
 
 // ❌ Delete Album
-router.delete("/:id", authAdmin, deleteAlbum);
+router.delete("/:id", auth("admin"), deleteAlbum);
 
 // ✅ Toggle Status
-router.patch("/:id/status", authAdmin, toggleAlbumStatus);
+router.patch("/:id/status", auth("admin"), toggleAlbumStatus);
 
 export default router;

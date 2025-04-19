@@ -14,14 +14,14 @@ import {
   incrementLikesCount,
   togglePlayListStatus,
 } from "../controllers/playlist-controller";
-import { authAdmin } from "../middleware/auth";
+import { auth } from "../middleware/auth";
 import { upload } from "../middleware/upload";
 import { handleUploadError } from "../middleware/handleUploadError";
 
 const router = express.Router();
 
 // remember to update and check all these apis after adding user module
-router.post("/", authAdmin,
+router.post("/", auth("admin"),
   (req, res, next) => {
     upload("playlist_images", ["image/jpg", "image/jpeg", "image/png"]).single("coverImage")(req, res, function (err) {
       if (err) {
@@ -31,9 +31,9 @@ router.post("/", authAdmin,
     });
   },
   validateRequest(createPlaylistSchema), createPlaylist);
-router.get("/", getAllPlaylists);
+router.get("/", auth(), getAllPlaylists);
 router.get("/:id", getPlaylistById);
-router.put("/:id", authAdmin,
+router.put("/:id", auth("admin"),
   (req, res, next) => {
     upload("playlist_images", ["image/jpg", "image/jpeg", "image/png"]).single("coverImage")(req, res, function (err) {
       if (err) {
@@ -43,9 +43,9 @@ router.put("/:id", authAdmin,
     });
   },
   validateRequest(updatePlaylistSchema), updatePlaylist);
-router.delete("/:id", authAdmin, deletePlaylist);
-router.delete("/:id/status", authAdmin, deletePlaylist);
-router.patch("/:id/status", authAdmin, togglePlayListStatus);
+router.delete("/:id", auth("admin"), deletePlaylist);
+router.delete("/:id/status", auth("admin"), deletePlaylist);
+router.patch("/:id/status", auth("admin"), togglePlayListStatus);
 // router.patch("/:id/like", authAdminOrUser, incrementLikesCount);//add after user module added
 
 export default router;

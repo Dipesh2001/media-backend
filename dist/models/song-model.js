@@ -54,4 +54,4 @@ songSchema.method("toJSON", function () {
     }
     return song;
 });
-exports.Song = mongoose_1.default.model("song", songSchema);
+exports.Song = mongoose_1.default.model("Song", songSchema);
