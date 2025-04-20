@@ -6,6 +6,7 @@ import {
   updateArtist,
   deleteArtist,
   toggleArtistStatus,
+  getSearchArtists,
 } from "../controllers/artist-controller";
 import { validateRequest } from "../middleware/validate-request";
 import { auth } from "../middleware/auth";
@@ -31,6 +32,7 @@ router.post("/", auth("admin"),
 
 // Get all artists (optionally add pagination/query later)
 router.get("/", auth("admin"), getAllArtists);
+router.get("/search", auth("admin"), getSearchArtists);
 
 // Get single artist by ID
 router.get("/:id", auth("admin"), getArtistById);

@@ -38,13 +38,27 @@ export const getAllAlbums = async (req: Request, res: Response) => {
   try {
     const page = parseInt(req.query.page as string) || 1;
     const size = parseInt(req.query.size as string) || 10;
+    const search = req.query.search as string;
+    const sortBy = (req.query.sortBy as string) || "createdAt";
 
-    const total = await Album.countDocuments();
+    const query: any = {};
 
-    const albums = await Album.find().populate("artists", "name image")
+    if (search) {
+      query.$or = [
+        { name: { $regex: search, $options: "i" } },
+        { genre: { $regex: search, $options: "i" } },
+        { language: { $regex: search, $options: "i" } },
+      ];
+    }
+
+    const total = await Album.countDocuments(query);
+
+    const albums = await Album.find(query)
+      .populate("artists", "name image")
       .skip((page - 1) * size)
       .limit(size)
-      .sort({ createdAt: -1 });
+      .sort({ [sortBy]: -1 });
+
     successResponse(res, "Albums fetched successfully", {
       albums,
       pagination: {

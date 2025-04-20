@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.toggleArtistStatus = exports.deleteArtist = exports.updateArtist = exports.getArtistById = exports.getAllArtists = exports.createArtist = void 0;
+exports.toggleArtistStatus = exports.deleteArtist = exports.updateArtist = exports.getArtistById = exports.getSearchArtists = exports.getAllArtists = exports.createArtist = void 0;
 const artist_model_1 = require("../models/artist-model");
 const helper_1 = require("../helper");
 const fs_1 = __importDefault(require("fs"));
@@ -37,16 +37,43 @@ const createArtist = async (req, res) => {
 };
 exports.createArtist = createArtist;
 // 📃 Get All Artists
-const getAllArtists = async (_req, res) => {
+const getAllArtists = async (req, res) => {
     try {
-        const artists = await artist_model_1.Artist.find().sort({ createdAt: -1 });
-        (0, helper_1.successResponse)(res, "Artists fetched successfully", { artists });
+        const page = parseInt(req.query.page) || 1;
+        const size = parseInt(req.query.size) || 10;
+        const total = await artist_model_1.Artist.countDocuments();
+        const artists = await artist_model_1.Artist.find().sort({ createdAt: -1 })
+            .skip((page - 1) * size)
+            .limit(size)
+            .sort({ createdAt: -1 });
+        (0, helper_1.successResponse)(res, "Artists fetched successfully", {
+            artists,
+            pagination: {
+                page,
+                size,
+                totalPages: Math.ceil(total / size),
+                totalItems: total,
+            },
+        });
     }
     catch (error) {
         (0, helper_1.errorResponse)(res, "Error fetching artists", {});
     }
 };
 exports.getAllArtists = getAllArtists;
+const getSearchArtists = async (req, res) => {
+    try {
+        const search = req.query.q;
+        const artists = await artist_model_1.Artist.find({ name: { $regex: search, $options: "i" } });
+        (0, helper_1.successResponse)(res, "Artists fetched successfully", {
+            artists,
+        });
+    }
+    catch (error) {
+        (0, helper_1.errorResponse)(res, "Error fetching artists", {});
+    }
+};
+exports.getSearchArtists = getSearchArtists;
 // 📄 Get Artist by ID
 const getArtistById = async (req, res) => {
     try {

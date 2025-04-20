@@ -53,7 +53,7 @@ const ArtistSchema = new mongoose_1.Schema({
 ArtistSchema.method("toJSON", function () {
     const artist = this.toObject();
     const baseUrl = process.env.BASE_URL || "http://localhost:8000";
-    if (artist.image) {
+    if (artist.image && artist.image.startsWith("uploads")) {
         // Convert local image path to full URL
         artist.image = `${baseUrl}/${artist.image.replace(/\\/g, "/").replace(/^.*uploads/, "uploads")}`;
     }

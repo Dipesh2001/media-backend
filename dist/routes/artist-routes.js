@@ -22,6 +22,7 @@ router.post("/", (0, auth_1.auth)("admin"), (req, res, next) => {
 }, (0, validate_request_1.validateRequest)(artist_validation_1.createArtistSchema), artist_controller_1.createArtist);
 // Get all artists (optionally add pagination/query later)
 router.get("/", (0, auth_1.auth)("admin"), artist_controller_1.getAllArtists);
+router.get("/search", (0, auth_1.auth)("admin"), artist_controller_1.getSearchArtists);
 // Get single artist by ID
 router.get("/:id", (0, auth_1.auth)("admin"), artist_controller_1.getArtistById);
 // Update artist by ID

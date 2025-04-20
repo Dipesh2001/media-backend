@@ -35,14 +35,43 @@ export const createArtist = async (req: Request, res: Response) => {
 };
 
 // 📃 Get All Artists
-export const getAllArtists = async (_req: Request, res: Response) => {
+export const getAllArtists = async (req: Request, res: Response) => {
   try {
-    const artists = await Artist.find().sort({ createdAt: -1 });
-    successResponse(res, "Artists fetched successfully", { artists });
+    const page = parseInt(req.query.page as string) || 1;
+    const size = parseInt(req.query.size as string) || 10;
+
+    const total = await Artist.countDocuments();
+
+    const artists = await Artist.find().sort({ createdAt: -1 })
+      .skip((page - 1) * size)
+      .limit(size)
+      .sort({ createdAt: -1 });
+    successResponse(res, "Artists fetched successfully", {
+      artists,
+      pagination: {
+        page,
+        size,
+        totalPages: Math.ceil(total / size),
+        totalItems: total,
+      },
+    });
   } catch (error) {
     errorResponse(res, "Error fetching artists", {});
   }
 };
+
+export const getSearchArtists = async (req: Request, res: Response) => {
+  try {
+    const search = req.query.q as string;
+
+    const artists = await Artist.find({ name: { $regex: search, $options: "i" } })
+    successResponse(res, "Artists fetched successfully", {
+      artists,
+    });
+  } catch (error) {
+    errorResponse(res, "Error fetching artists", {});
+  }
+}
 
 // 📄 Get Artist by ID
 export const getArtistById = async (req: Request, res: Response) => {
@@ -67,24 +96,24 @@ export const updateArtist = async (req: Request, res: Response) => {
     if (!artist) {
       errorResponse(res, "Artist not found", {});
       return;
-    }else{
-         // If a new image is uploaded, replace the old one
-    if (req.file) {
-      if (artist.image && fs.existsSync(artist.image)) {
-        fs.unlink(artist.image, (err) => {
-          if (err) console.error("Error deleting old image:", err);
-        });
+    } else {
+      // If a new image is uploaded, replace the old one
+      if (req.file) {
+        if (artist.image && fs.existsSync(artist.image)) {
+          fs.unlink(artist.image, (err) => {
+            if (err) console.error("Error deleting old image:", err);
+          });
+        }
+
+        artist.image = req.file.path.replace(/\\/g, "/"); // Normalize path
       }
 
-      artist.image = req.file.path.replace(/\\/g, "/"); // Normalize path
-    }
+      artist.name = name || artist.name;
+      artist.bio = bio || artist.bio;
+      artist.country = country || artist.country;
+      artist.socialLinks = socialLinks ? JSON.parse(socialLinks) : artist.socialLinks;
 
-    artist.name = name || artist.name;
-    artist.bio = bio || artist.bio;
-    artist.country = country || artist.country;
-    artist.socialLinks = socialLinks ? JSON.parse(socialLinks) : artist.socialLinks;
-
-    await artist.save();
+      await artist.save();
     }
     successResponse(res, "Artist updated successfully", { artist });
   } catch (error) {
@@ -99,7 +128,7 @@ export const deleteArtist = async (req: Request, res: Response) => {
     const deleted = await Artist.findByIdAndDelete(req.params.id);
     if (!deleted) {
       errorResponse(res, "Artist not found", {});
-    }else{
+    } else {
       if (deleted.image && fs.existsSync(deleted.image)) {
         fs.unlink(deleted.image, (err) => {
           if (err) console.error("Error deleting image:", err);
@@ -118,10 +147,10 @@ export const toggleArtistStatus = async (req: Request, res: Response) => {
     const artist = await Artist.findById(req.params.id);
     if (!artist) {
       errorResponse(res, "Artist not found", {});
-    }else{
+    } else {
       artist.isActive = !artist.isActive;
       await artist.save();
-  
+
       successResponse(res, "Artist status updated", {
         artistId: artist._id,
         isActive: artist.isActive,
